@@ -9,12 +9,6 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-type ctxKey int32
-
-const (
-	TraceIDKey ctxKey = iota
-)
-
 type Client struct {
 	name string
 	LoggingServiceClient
@@ -32,6 +26,8 @@ func NewClient(name, dialAddr string, crt tls.Certificate, rootCAs *x509.CertPoo
 	return &Client{name, NewLoggingServiceClient(conn)}, nil
 }
 
+// Write logs the message to the datastore. Context should have a value with the key TraceIDKey.
+// See TraceIdMiddleware() to add a trace ID to each http request.
 func (c *Client) Write(ctx context.Context, message string, logLevel Level) error {
 	trace, ok := ctx.Value(TraceIDKey).(string)
 	if !ok {

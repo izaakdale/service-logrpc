@@ -2,11 +2,20 @@ package logrpc
 
 import (
 	"context"
-	"net"
+	"net/http"
 
 	"github.com/google/uuid"
 )
 
-func ConnectionContext(ctx context.Context, c net.Conn) context.Context {
-	return context.WithValue(ctx, TraceIDKey, uuid.NewString())
+type ctxKey int32
+
+const (
+	TraceIDKey ctxKey = iota
+)
+
+func TraceIdMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r = r.WithContext(context.WithValue(r.Context(), TraceIDKey, uuid.NewString()))
+		next.ServeHTTP(w, r)
+	})
 }

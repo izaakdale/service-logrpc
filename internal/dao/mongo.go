@@ -33,7 +33,7 @@ func (m *mongoConn) Insert(ctx context.Context, service, message, trace string, 
 		bson.D{
 			{Key: Service, Value: service},
 			{Key: Message, Value: message},
-			{Key: Level, Value: level},
+			{Key: Level, Value: level.String()},
 			{Key: TraceId, Value: trace},
 			{Key: Time, Value: time.Now()},
 		},
@@ -69,14 +69,14 @@ func (m *mongoConn) Fetch(ctx context.Context) ([]*logrpc.LogRecord, error) {
 
 		s := record[Service].(string)
 		m := record[Message].(string)
-		ll := record[Level].(int32)
+		ll := record[Level].(string)
 		t, ok := record[TraceId].(string)
 		if !ok {
 			log.Printf("no trace in log\n")
 		}
 
 		ret = append(ret, &logrpc.LogRecord{
-			Service: s, Message: m, TraceId: t, LogLevel: logrpc.Level(ll),
+			Service: s, Message: m, TraceId: t, LogLevel: logrpc.Level(logrpc.Level_value[ll]),
 		})
 
 	}
